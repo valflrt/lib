@@ -1,0 +1,20 @@
+{
+  "name": "@valflrt/lib",
+  "version": "0.0.0",
+  "description": "Some useful things.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "rm -rf dist && npx tsc"
+  },
+  "author": "valflrt",
+  "license": "MIT",
+  "dependencies": {
+    "stream": "^0.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.3",
+    "typescript": "^4.7.4"
+  }
+}
