@@ -28,7 +28,7 @@ jobs:
 
       - name: Cleanup
         run: |
-          rm -rf .github
+          rm -rf .github test src
           rm .gitignore tsconfig.json
 
       - name: Publish using `npm publish`
