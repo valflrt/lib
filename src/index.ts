@@ -1,2 +1,2 @@
-export * from "./Collection";
+export * from "./EnhancedMap";
 export * from "./pipeline";
