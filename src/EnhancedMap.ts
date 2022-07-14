@@ -1,4 +1,7 @@
-export type MapEntry<K = string, V = any> = [key: K, value: V];
+export interface EnhancedMapEntry<K = string, V = any> {
+  key: K;
+  value: V;
+}
 
 export class EnhancedMap<K = string, V = any> extends Map<K, V> {
   /**
@@ -9,16 +12,16 @@ export class EnhancedMap<K = string, V = any> extends Map<K, V> {
    * Creates a Map from premade entries.
    * @param entries Entries to make the Map with.
    */
-  constructor(entries: MapEntry<V>[] | Map<K, V>);
-  constructor(entries?: MapEntry<K, V>[] | Map<K, V>) {
-    let map: MapEntry<K, V>[] = [];
+  constructor(entries: EnhancedMapEntry<K, V>[] | Map<K, V>);
+  constructor(entries?: EnhancedMapEntry<K, V>[] | Map<K, V>) {
+    let mappedEntries: [K, V][] = [];
     if (entries)
       if (Array.isArray(entries)) {
-        entries.forEach(([key, value]) => map.push([key, value]));
+        entries.forEach(({ key, value }) => mappedEntries.push([key, value]));
       } else {
-        entries.forEach((value, key) => map.push([key, value]));
+        entries.forEach((value, key) => mappedEntries.push([key, value]));
       }
-    super(map ?? undefined);
+    super(mappedEntries ?? undefined);
   }
 
   /**
@@ -45,8 +48,8 @@ export class EnhancedMap<K = string, V = any> extends Map<K, V> {
    * @param filter Function executed for each entry, when true
    * is returned, the corresponding entry is removed.
    */
-  public remove(filter: (value: V, key: K) => any) {
-    this.forEach((v, k) => (filter(v, k) ? this.delete(k) : null));
+  public remove(filter: (entry: EnhancedMapEntry<K, V>) => unknown) {
+    this.each((e) => (filter(e) ? this.delete(e.key) : null));
   }
 
   /**
@@ -54,7 +57,7 @@ export class EnhancedMap<K = string, V = any> extends Map<K, V> {
    * @param keys Keys of the entries to remove.
    */
   public removeKeys(...keys: K[]) {
-    this.remove((v, k) => keys.some((key) => key === k));
+    this.remove((e) => keys.some((k) => k === e.key));
   }
 
   /**
@@ -65,9 +68,9 @@ export class EnhancedMap<K = string, V = any> extends Map<K, V> {
    * @returns {boolean} Whether an entry matched the filter
    * or not.
    */
-  public some(filter: (value: V, key: K) => any): boolean {
+  public some(filter: (entry: EnhancedMapEntry<K, V>) => unknown): boolean {
     let result: boolean[] = [];
-    this.forEach((v, k) => result.push(filter(v, k)));
+    this.each((e) => result.push(!!filter(e)));
     return result.some((i) => !!i);
   }
 
@@ -78,10 +81,19 @@ export class EnhancedMap<K = string, V = any> extends Map<K, V> {
    * @returns {boolean} Whether all entries matched the filter
    * or not.
    */
-  public every(filter: (value: V, key: K) => any): boolean {
+  public every(filter: (entry: EnhancedMapEntry<K, V>) => unknown): boolean {
     let result: boolean[] = [];
-    this.forEach((v, k) => result.push(filter(v, k)));
+    this.each((e) => result.push(!!filter(e)));
     return result.every((i) => !!i);
+  }
+
+  /**
+   * Executes a function for each entry of the Map.
+   * @param callback Function executed for each entry of the
+   * Map.
+   */
+  public each(callback: (entry: EnhancedMapEntry<K, V>) => unknown): void {
+    super.forEach((v, k) => callback({ key: k, value: v }));
   }
 
   /**
@@ -91,10 +103,30 @@ export class EnhancedMap<K = string, V = any> extends Map<K, V> {
    * @param mapper Function called for each entry.
    * @returns {EnhancedMap} The new Map.
    */
-  public map<V2>(mapper: (value: V, key: K) => MapEntry<V2>): EnhancedMap<V2> {
+  public map<V2>(
+    mapper: (entry: EnhancedMapEntry<K, V>) => EnhancedMapEntry<V2>
+  ): EnhancedMap<V2> {
     let newMap = new EnhancedMap<V2>();
-    this.forEach((k, v) => newMap.set(...mapper(k, v)));
+    this.each((e) => {
+      let { key, value } = mapper(e);
+      newMap.set(key, value);
+    });
     return newMap;
+  }
+
+  /**
+   * Finds all entries matching the specified filter.
+   * @param finder Function called for every entries, when
+   * returning true, the entry is added to the output array.
+   * @returns {EnhancedMapEntry<V>[] | null} Array of found
+   * entries or null if no entry matched the filter.
+   */
+  public findAll(
+    finder: (entry: EnhancedMapEntry<K, V>) => unknown
+  ): EnhancedMapEntry<K, V>[] | null {
+    let found: EnhancedMapEntry<K, V>[] = [];
+    this.each((e) => !!finder(e) && found.push(e));
+    return found.length !== 0 ? found : null;
   }
 
   /**
@@ -102,25 +134,13 @@ export class EnhancedMap<K = string, V = any> extends Map<K, V> {
    * (similar to {@link Array.find})
    * @param finder Function called for every entries until it
    * returns true.
-   * @returns {MapEntry<V> | null} The found
+   * @returns {EnhancedMapEntry<V> | null} The found
    * entry or null if no entry matched the filter.
    */
-  public find(finder: (value: V, key: K) => any): MapEntry<K, V> | null {
-    let found = this.findAll((v, k) => !!finder(v, k));
-    return found ? found[0] : null;
-  }
-
-  /**
-   * Finds all entries matching the specified filter.
-   * @param finder Function called for every entries, when
-   * returning true, the entry is added to the output array.
-   * @returns {MapEntry<V>[] | null} Array of found
-   * entries or null if no entry matched the filter.
-   */
-  public findAll(finder: (value: V, key: K) => any): MapEntry<K, V>[] | null {
-    let found: MapEntry<K, V>[] = [];
-    this.forEach((v, k) => (!!finder(v, k) ? found.push([k, v]) : null));
-    return found.length !== 0 ? found : null;
+  public find(
+    finder: (entry: EnhancedMapEntry<K, V>) => unknown
+  ): EnhancedMapEntry<K, V> | null {
+    return this.findAll(finder)?.[0] ?? null;
   }
 
   /**
@@ -149,24 +169,26 @@ export class EnhancedMap<K = string, V = any> extends Map<K, V> {
    * Concats the current Map with one or more other
    * Map
    * @param others Other Map to concat with
-   * @returns {EnhancedMap<V | V2>} The new Map
+   * @returns {EnhancedMap<K | K2,V | V2>} The new Map
    */
-  public concat<V2>(...others: EnhancedMap<V2>[]): EnhancedMap<V | V2> {
-    return new EnhancedMap<V | V2>([
-      ...this.toArray(),
-      ...others.reduce<MapEntry<V2>[]>(
-        (acc, c) => [...acc, ...c.toArray()],
+  public concat<K2, V2>(
+    ...others: EnhancedMap<K2, V2>[]
+  ): EnhancedMap<K | K2, V | V2> {
+    return new EnhancedMap<K | K2, V | V2>([
+      ...this.toJSON(),
+      ...others.reduce<EnhancedMapEntry<K2, V2>[]>(
+        (acc, c) => [...acc, ...c.toJSON()],
         []
       ),
     ]);
   }
 
   /**
-   * Raw entries as an array
+   * Returns raw entries as an array
    */
-  public toArray() {
-    let array: MapEntry<K, V>[] = [];
-    this.forEach((v, k) => array.push([k, v]));
+  public toJSON() {
+    let array: EnhancedMapEntry<K, V>[] = [];
+    this.each((e) => array.push(e));
     return array;
   }
 }

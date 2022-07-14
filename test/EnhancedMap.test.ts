@@ -3,6 +3,8 @@ import { expect } from "chai";
 
 import { EnhancedMap } from "../src/EnhancedMap";
 
+// TODO: Replace Collection by map in comments and variables
+
 describe("Collection tests", () => {
   describe("Collection.set()", () => {
     it("should set an entry properly", () => {
@@ -118,9 +120,9 @@ describe("Collection tests", () => {
       let keys: string[] = [];
       let values: any[] = [];
 
-      collection.each((e) => {
-        keys.push(e.key);
-        values.push(e.value);
+      collection.forEach((value, key) => {
+        keys.push(key);
+        values.push(value);
       });
 
       expect(keys).to.deep.equal(["greetings", "one", "rick", "array"]);
@@ -135,41 +137,45 @@ describe("Collection tests", () => {
 
   describe("Collection.map()", () => {
     it("should execute a function for each item that maps the original Collection into another", () => {
-      let collection = new EnhancedMap<number>();
-      collection.set("one", 1);
-      collection.set("two", 2);
-      collection.set("three", 3);
+      let collection = new EnhancedMap<string, number>();
+      collection.set("first", 1);
+      collection.set("second", 2);
+      collection.set("third", 3);
 
-      let newCollection = collection.map((e) => [e.key, e.key]);
+      let newCollection = collection.map(({ key, value }) => ({
+        key,
+        value: value + 1,
+      }));
 
       expect(newCollection).to.deep.equal(
-        new Map<string, any>()
-          .set("one", "one")
-          .set("two", "two")
-          .set("three", "three")
+        new EnhancedMap<string, any>()
+          .set("first", 2)
+          .set("second", 3)
+          .set("third", 4)
       );
     });
   });
 
   describe("Collection.find()", () => {
     it("should find an entry that matches the specified filter", () => {
-      let collection = new EnhancedMap<number>();
+      let collection = new EnhancedMap<string, number>();
       collection.set("zero point five", 0.5);
       collection.set("one", 1);
       collection.set("one point five", 1.5);
 
-      let found = collection.find((e) => Number.isInteger(e.value));
+      let found = collection.find(({ value }) => Number.isInteger(value));
 
+      expect(found).to.not.be.null;
       expect(found?.key).to.equal("one");
       expect(found?.value).to.equal(1);
     });
     it("should return null if no entry matches the specified filter", () => {
-      let collection = new EnhancedMap<number>();
+      let collection = new EnhancedMap<string, number>();
       collection.set("one", 1);
       collection.set("two", 2);
       collection.set("three", 3);
 
-      let found = collection.find((e) => !Number.isInteger(e.value));
+      let found = collection.find(({ value }) => !Number.isInteger(value));
 
       expect(found).to.be.null;
     });
@@ -177,13 +183,13 @@ describe("Collection tests", () => {
 
   describe("Collection.findAll()", () => {
     it("should find all entries that match the specified filter", () => {
-      let collection = new EnhancedMap<number>();
+      let collection = new EnhancedMap<string, number>();
       collection.set("zero point five", 0.5);
       collection.set("one", 1);
       collection.set("one point five", 1.5);
       collection.set("two", 2);
 
-      let found = collection.findAll((e) => Number.isInteger(e.value));
+      let found = collection.findAll(({ value }) => Number.isInteger(value));
 
       expect(
         found?.every(
@@ -207,16 +213,37 @@ describe("Collection tests", () => {
 
   describe("Collection.filter()", () => {
     it("should execute a function for each item that filters the original Collection and makes another", () => {
-      let collection = new EnhancedMap<number>();
+      let collection = new EnhancedMap<string, number>();
       collection.set("zero point five", 0.5);
       collection.set("one", 1);
       collection.set("one point five", 1.5);
       collection.set("two", 2);
 
-      let newCollection = collection.filter((e) => Number.isInteger(e.value));
+      let newCollection = collection.filter((v) => Number.isInteger(v));
 
       expect(newCollection).to.deep.equal(
         new Map<string, number>().set("one", 1).set("two", 2)
+      );
+    });
+  });
+
+  describe("Collection.concat()", () => {
+    it("should concat two EnhancedMaps properly", () => {
+      let collection1 = new EnhancedMap<string, number>()
+        .set("one", 1)
+        .set("two", 2);
+      let collection2 = new EnhancedMap<string, number>()
+        .set("three", 3)
+        .set("four", 4);
+
+      let newCollection = collection1.concat(collection2);
+
+      expect(newCollection).to.deep.equal(
+        new Map<string, number>()
+          .set("one", 1)
+          .set("two", 2)
+          .set("three", 3)
+          .set("four", 4)
       );
     });
   });
