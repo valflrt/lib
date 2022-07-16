@@ -3,126 +3,117 @@ import { expect } from "chai";
 
 import { EnhancedMap } from "../src/EnhancedMap";
 
-// TODO: Replace Collection by map in comments and variables
-
-describe("Collection tests", () => {
-  describe("Collection.set()", () => {
-    it("should set an entry properly", () => {
-      let collection = new EnhancedMap();
-      collection.set("rick", "https://youtu.be/dQw4w9WgXcQ");
-      expect(collection).to.deep.equal(
-        new Map<string, any>().set("rick", "https://youtu.be/dQw4w9WgXcQ")
-      );
+describe("EnhancedMap tests", () => {
+  describe("EnhancedMap.get()", () => {
+    it("should properly retrieve a value from a key", () => {
+      let map = new EnhancedMap().set("rick", "https://youtu.be/dQw4w9WgXcQ");
+      expect(map.get("rick")).to.equal("https://youtu.be/dQw4w9WgXcQ");
+    });
+    it("should return undefined if the entry doesn't exist", () => {
+      let map = new EnhancedMap().set("rick", "https://youtu.be/dQw4w9WgXcQ");
+      expect(map.get("rik")).to.be.undefined;
+    });
+    it("should properly retrieve a value from an index", () => {
+      let map = new EnhancedMap().set("rick", "https://youtu.be/dQw4w9WgXcQ");
+      expect(map.get(0)).to.equal("https://youtu.be/dQw4w9WgXcQ");
+    });
+    it("should return undefined if the entry doesn't exist", () => {
+      let map = new EnhancedMap().set("rick", "https://youtu.be/dQw4w9WgXcQ");
+      expect(map.get(666)).to.be.undefined;
     });
   });
 
-  describe("Collection.get()", () => {
-    it("should get an entry properly", () => {
-      let collection = new EnhancedMap();
-      collection.set("rick", "https://youtu.be/dQw4w9WgXcQ");
-      expect(collection.get("rick")).to.equal("https://youtu.be/dQw4w9WgXcQ");
-    });
-  });
-
-  describe("Collection.has()", () => {
-    it("should return true if the entry exists", () => {
-      let collection = new EnhancedMap();
-      collection.set("greetings", ["hello", "hi", "goodbye"]);
-      expect(collection.has("greetings")).to.be.true;
-    });
-    it("should return false if the entry doesn't exist", () => {
-      let collection = new EnhancedMap();
-      expect(collection.has("greetings")).to.be.false;
-    });
-  });
-
-  describe("Collection.hasAll()", () => {
+  describe("EnhancedMap.hasAll()", () => {
     it("should return true if all specified entries exist", () => {
-      let collection = new EnhancedMap();
-      collection.set("greetings", ["hello", "hi", "goodbye"]);
-      collection.set("rick", "https://youtu.be/dQw4w9WgXcQ");
-      expect(collection.hasAll("greetings", "rick")).to.be.true;
+      let map = new EnhancedMap()
+        .set("greetings", ["hello", "hi", "goodbye"])
+        .set("rick", "https://youtu.be/dQw4w9WgXcQ");
+      expect(map.hasAll("greetings", "rick")).to.be.true;
     });
     it("should return false if one or more of the specified entries doesn't exist", () => {
-      let collection = new EnhancedMap();
-      collection.set("greetings", ["hello", "hi", "goodbye"]);
-      expect(collection.hasAll("greetings", "rick")).to.be.false;
-      expect(collection.hasAll("greetings", "rick", "nothing")).to.be.false;
+      let map = new EnhancedMap().set("greetings", ["hello", "hi", "goodbye"]);
+      expect(map.hasAll("greetings", "rick")).to.be.false;
+      expect(map.hasAll("greetings", "rick", "nothing")).to.be.false;
     });
   });
 
-  describe("Collection.hasAny()", () => {
+  describe("EnhancedMap.hasAny()", () => {
     it("should return true if one or more of the specified entries exists", () => {
-      let collection = new EnhancedMap();
-      collection.set("greetings", ["hello", "hi", "goodbye"]);
-      expect(collection.hasAny("greetings", "rick", "nothing")).to.be.true;
+      let map = new EnhancedMap().set("greetings", ["hello", "hi", "goodbye"]);
+      expect(map.hasAny("greetings", "rick", "nothing")).to.be.true;
     });
     it("should return false if none of the specified entries exist", () => {
-      let collection = new EnhancedMap();
-      collection.set("greetings", ["hello", "hi", "goodbye"]);
-      expect(collection.hasAny("rick", "nothing")).to.be.false;
+      let map = new EnhancedMap().set("greetings", ["hello", "hi", "goodbye"]);
+      expect(map.hasAny("rick", "nothing")).to.be.false;
     });
   });
 
-  describe("Collection.remove()", () => {
+  describe("EnhancedMap.remove()", () => {
     it("should remove properly the entries that match the filter", () => {
-      let collection = new EnhancedMap();
-      collection.set("greetings", ["hello", "hi", "goodbye"]);
-      collection.set("one", 1);
-      collection.set("rick", "https://youtu.be/dQw4w9WgXcQ");
-      collection.set("array", [1, 2, 3]);
+      let map = new EnhancedMap()
+        .set("greetings", ["hello", "hi", "goodbye"])
+        .set("one", 1)
+        .set("rick", "https://youtu.be/dQw4w9WgXcQ")
+        .set("array", [1, 2, 3]);
 
-      collection.remove((e) => Array.isArray(e.value));
+      map.remove((e) => Array.isArray(e.value));
 
-      expect(collection.hasAll("one", "rick")).to.be.true;
-      expect(collection.hasAny("greetings", "array")).to.be.false;
+      expect(map.hasAll("one", "rick")).to.be.true;
+      expect(map.hasAny("greetings", "array")).to.be.false;
     });
   });
 
-  describe("Collection.removeKeys()", () => {
+  describe("EnhancedMap.removeKeys()", () => {
     it("should properly remove entries with the specified keys", () => {
-      let collection = new EnhancedMap();
-      collection.set("greetings", ["hello", "hi", "goodbye"]);
-      collection.set("one", 1);
-      collection.set("rick", "https://youtu.be/dQw4w9WgXcQ");
-      collection.set("array", [1, 2, 3]);
+      let map = new EnhancedMap()
+        .set("greetings", ["hello", "hi", "goodbye"])
+        .set("one", 1)
+        .set("rick", "https://youtu.be/dQw4w9WgXcQ")
+        .set("array", [1, 2, 3]);
 
-      collection.removeKeys("greetings", "rick");
+      map.removeKeys("greetings", "rick");
 
-      expect(collection.hasAll("one", "array")).to.be.true;
-      expect(collection.hasAny("greetings", "rick")).to.be.false;
+      expect(map.hasAll("one", "array")).to.be.true;
+      expect(map.hasAny("greetings", "rick")).to.be.false;
     });
   });
 
-  describe("Collection.some()", () => {
-    it("should check if one of the Collection entries matches the filter", () => {
-      let collection = new EnhancedMap();
-      collection.set("greetings", ["hello", "hi", "goodbye"]);
-      collection.set("one", 1);
-      collection.set("rick", "https://youtu.be/dQw4w9WgXcQ");
-      collection.set("array", [1, 2, 3]);
+  describe("EnhancedMap.some()", () => {
+    it("should check if one of the given EnhancedMap entries matches the filter", () => {
+      let map = new EnhancedMap()
+        .set("greetings", ["hello", "hi", "goodbye"])
+        .set("one", 1)
+        .set("rick", "https://youtu.be/dQw4w9WgXcQ")
+        .set("array", [1, 2, 3]);
 
-      expect(collection.some(({ key }) => key === "one")).to.be.true;
-      expect(
-        collection.some(({ value }) => value === "https://youtu.be/dQw4w9WgXcQ")
-      ).to.be.true;
+      expect(map.some(({ key }) => key === "one")).to.be.true;
+      expect(map.some(({ value }) => value === "https://youtu.be/dQw4w9WgXcQ"))
+        .to.be.true;
     });
   });
 
-  describe("Collection.forEach()", () => {
-    it("should execute a function for each entry in the collection", () => {
-      let collection = new EnhancedMap();
-      collection.set("greetings", ["hello", "hi", "goodbye"]);
-      collection.set("one", 1);
-      collection.set("rick", "https://youtu.be/dQw4w9WgXcQ");
-      collection.set("array", [1, 2, 3]);
+  describe("EnhancedMap.every()", () => {
+    it("should check if all of the EnhancedMap entries match the filter", () => {
+      let map = new EnhancedMap().set("one", 1).set("two", 2).set("three", 3);
+
+      expect(map.every(({ value }) => Number.isInteger(value))).to.be.true;
+    });
+  });
+
+  describe("EnhancedMap.each()", () => {
+    it("should execute a function for each entry in the map", () => {
+      let map = new EnhancedMap()
+        .set("greetings", ["hello", "hi", "goodbye"])
+        .set("one", 1)
+        .set("rick", "https://youtu.be/dQw4w9WgXcQ")
+        .set("array", [1, 2, 3]);
 
       let keys: string[] = [];
       let values: any[] = [];
 
-      collection.forEach((value, key) => {
-        keys.push(key);
-        values.push(value);
+      map.each((e) => {
+        keys.push(e.key);
+        values.push(e.value);
       });
 
       expect(keys).to.deep.equal(["greetings", "one", "rick", "array"]);
@@ -135,20 +126,20 @@ describe("Collection tests", () => {
     });
   });
 
-  describe("Collection.map()", () => {
-    it("should execute a function for each item that maps the original Collection into another", () => {
-      let collection = new EnhancedMap<string, number>();
-      collection.set("first", 1);
-      collection.set("second", 2);
-      collection.set("third", 3);
+  describe("EnhancedMap.map()", () => {
+    it("should execute a function for each item that maps the original EnhancedMap into another", () => {
+      let map = new EnhancedMap<number>()
+        .set("first", 1)
+        .set("second", 2)
+        .set("third", 3);
 
-      let newCollection = collection.map(({ key, value }) => ({
+      let newMap = map.map(({ key, value }) => ({
         key,
         value: value + 1,
       }));
 
-      expect(newCollection).to.deep.equal(
-        new EnhancedMap<string, any>()
+      expect(newMap).to.deep.equal(
+        new Map<string, number>()
           .set("first", 2)
           .set("second", 3)
           .set("third", 4)
@@ -156,40 +147,28 @@ describe("Collection tests", () => {
     });
   });
 
-  describe("Collection.find()", () => {
-    it("should find an entry that matches the specified filter", () => {
-      let collection = new EnhancedMap<string, number>();
-      collection.set("zero point five", 0.5);
-      collection.set("one", 1);
-      collection.set("one point five", 1.5);
+  describe("EnhancedMap.reduce()", () => {
+    it("should execute a function for each item that reduces the original EnhancedMap into a new value", () => {
+      let map = new EnhancedMap<number>()
+        .set("one", 1)
+        .set("two", 2)
+        .set("three", 3);
 
-      let found = collection.find(({ value }) => Number.isInteger(value));
+      let sum = map.reduce(0, (v, { value }) => v + value);
 
-      expect(found).to.not.be.null;
-      expect(found?.key).to.equal("one");
-      expect(found?.value).to.equal(1);
-    });
-    it("should return null if no entry matches the specified filter", () => {
-      let collection = new EnhancedMap<string, number>();
-      collection.set("one", 1);
-      collection.set("two", 2);
-      collection.set("three", 3);
-
-      let found = collection.find(({ value }) => !Number.isInteger(value));
-
-      expect(found).to.be.null;
+      expect(sum).to.equal(6);
     });
   });
 
-  describe("Collection.findAll()", () => {
+  describe("EnhancedMap.findAll()", () => {
     it("should find all entries that match the specified filter", () => {
-      let collection = new EnhancedMap<string, number>();
-      collection.set("zero point five", 0.5);
-      collection.set("one", 1);
-      collection.set("one point five", 1.5);
-      collection.set("two", 2);
+      let map = new EnhancedMap<number>()
+        .set("zero point five", 0.5)
+        .set("one", 1)
+        .set("one point five", 1.5)
+        .set("two", 2);
 
-      let found = collection.findAll(({ value }) => Number.isInteger(value));
+      let found = map.findAll(({ value }) => Number.isInteger(value));
 
       expect(
         found?.every(
@@ -200,51 +179,86 @@ describe("Collection tests", () => {
       ).to.be.true;
     });
     it("should return null if no entry matches the specified filter", () => {
-      let collection = new EnhancedMap<number | string>();
-      collection.set("one", 1);
-      collection.set("two", 2);
-      collection.set("three", 3);
+      let map = new EnhancedMap<number | string>()
+        .set("one", 1)
+        .set("two", 2)
+        .set("three", 3);
 
-      let found = collection.findAll((e) => !Number.isInteger(e.value));
+      let found = map.findAll((e) => !Number.isInteger(e.value));
 
       expect(found).to.be.null;
     });
   });
 
-  describe("Collection.filter()", () => {
-    it("should execute a function for each item that filters the original Collection and makes another", () => {
-      let collection = new EnhancedMap<string, number>();
-      collection.set("zero point five", 0.5);
-      collection.set("one", 1);
-      collection.set("one point five", 1.5);
-      collection.set("two", 2);
+  describe("EnhancedMap.find()", () => {
+    it("should find an entry that matches the specified filter", () => {
+      let map = new EnhancedMap<number>()
+        .set("zero point five", 0.5)
+        .set("one", 1)
+        .set("one point five", 1.5);
 
-      let newCollection = collection.filter((v) => Number.isInteger(v));
+      let found = map.find(({ value }) => Number.isInteger(value));
 
-      expect(newCollection).to.deep.equal(
-        new Map<string, number>().set("one", 1).set("two", 2)
-      );
+      expect(found).to.not.be.null;
+      expect(found?.key).to.equal("one");
+      expect(found?.value).to.equal(1);
+    });
+    it("should return null if no entry matches the specified filter", () => {
+      let map = new EnhancedMap<number>()
+        .set("one", 1)
+        .set("two", 2)
+        .set("three", 3);
+
+      let found = map.find(({ value }) => !Number.isInteger(value));
+
+      expect(found).to.be.null;
     });
   });
 
-  describe("Collection.concat()", () => {
-    it("should concat two EnhancedMaps properly", () => {
-      let collection1 = new EnhancedMap<string, number>()
+  describe("EnhancedMap.clone()", () => {
+    it("should clone a map properly", () => {
+      let original = new EnhancedMap<number>()
         .set("one", 1)
-        .set("two", 2);
-      let collection2 = new EnhancedMap<string, number>()
-        .set("three", 3)
-        .set("four", 4);
+        .set("two", 2)
+        .set("three", 3);
 
-      let newCollection = collection1.concat(collection2);
+      let clone = original.clone();
 
-      expect(newCollection).to.deep.equal(
+      expect(clone).to.deep.equal(original);
+    });
+  });
+
+  describe("EnhancedMap.concat()", () => {
+    it("should concat two EnhancedMaps properly", () => {
+      let map1 = new EnhancedMap<number>().set("one", 1).set("two", 2);
+      let map2 = new EnhancedMap<number>().set("three", 3).set("four", 4);
+
+      let newMap = map1.concat(map2);
+
+      expect(newMap).to.deep.equal(
         new Map<string, number>()
           .set("one", 1)
           .set("two", 2)
           .set("three", 3)
           .set("four", 4)
       );
+    });
+  });
+
+  describe("EnhancedMap.toJSON()", () => {
+    it("should turn a map into JSON object", () => {
+      let map = new EnhancedMap<number>()
+        .set("one", 1)
+        .set("two", 2)
+        .set("three", 3);
+
+      let object = map.toJSON();
+
+      expect(object).to.deep.equal([
+        { key: "one", value: 1 },
+        { key: "two", value: 2 },
+        { key: "three", value: 3 },
+      ]);
     });
   });
 });
