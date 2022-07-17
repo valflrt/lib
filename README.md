@@ -10,10 +10,14 @@ npm i @valflrt/lib
 
 ## What's inside ?
 
-### [EnhancedMap](src/EnhancedMap.ts)
+### [EnhancedMap](https://lib.at.valflrt.dev/classes/EnhancedMap.html)
+
+> [See Source Code](https://github.com/valflrt/lib/blob/master/src/EnhancedMap.ts)
 
 Similar to Map but with more methods.
 
-### [pipeline](src/pipeline.ts)
+### [pipeline](https://lib.at.valflrt.dev/functions/pipeline.html)
+
+> [See Source Code](https://github.com/valflrt/lib/blob/master/src/pipeline.ts)
 
 A better stream pipeline (promise).
