@@ -4,7 +4,7 @@ on:
   push:
 
 jobs:
-  publish:
+  generate:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,11 +17,16 @@ jobs:
           node-version: 17
           registry-url: "https://registry.npmjs.org"
 
-      - name: Clean install using `npm ci`
+      - name: Git setup
+        run: |
+          git config --global user.email "valflrt@pm.me"
+          git config --global user.name "valflrt"
+
+      - name: Clean install (using `npm ci`)
         run: npm ci
 
-      - name: Generate Docs
+      - name: Generate docs
         run: npm run docs:gen
 
-      - name: Update Docs
+      - name: Update docs
         run: git commit -a -m "Auto-update docs." && git push
