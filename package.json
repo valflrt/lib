@@ -7,12 +7,14 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "rm -rf dist && npx tsc",
-    "test": "npx ts-mocha -p tsconfig.json test/**/*.test.ts"
+    "test": "npx ts-mocha -p tsconfig.json test/**/*.test.ts",
+    "docs:gen": "rm -rf docs && npx typedoc src --readme README.docs.md"
   },
   "author": "valflrt",
   "license": "MIT",
   "dependencies": {
-    "stream": "^0.0.2"
+    "stream": "^0.0.2",
+    "typedoc": "^0.23.7"
   },
   "devDependencies": {
     "@types/chai": "^4.3.1",
