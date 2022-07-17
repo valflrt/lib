@@ -4,6 +4,47 @@ import { expect } from "chai";
 import { EnhancedMap } from "../src/EnhancedMap";
 
 describe("EnhancedMap tests", () => {
+  describe("EnhancedMap.constructor", () => {
+    it("should make a new EnhancedMap", () => {
+      let map = new EnhancedMap();
+
+      expect(map).to.deep.equal(new Map<string, number>());
+    });
+    it("should make a new EnhancedMap from an Array of entries", () => {
+      let map = new EnhancedMap([
+        { k: "one", v: 1 },
+        { k: "two", v: 2 },
+        { k: "three", v: 3 },
+      ]);
+
+      expect(map).to.deep.equal(
+        new Map<string, number>().set("one", 1).set("two", 2).set("three", 3)
+      );
+    });
+    it("should make a new EnhancedMap from a Map of entries", () => {
+      let entries = new Map<string, number>()
+        .set("one", 1)
+        .set("two", 2)
+        .set("three", 3);
+
+      let map = new EnhancedMap(entries);
+
+      expect(map).to.deep.equal(entries);
+    });
+    it("should make a new EnhancedMap from an EnhancedMap of entries", () => {
+      let entries = new EnhancedMap<number>()
+        .set("one", 1)
+        .set("two", 2)
+        .set("three", 3);
+
+      let map = new EnhancedMap(entries);
+
+      expect(map).to.deep.equal(
+        new Map<string, number>().set("one", 1).set("two", 2).set("three", 3)
+      );
+    });
+  });
+
   describe("EnhancedMap.get()", () => {
     it("should properly retrieve a value from a key", () => {
       let map = new EnhancedMap().set("rick", "https://youtu.be/dQw4w9WgXcQ");
@@ -56,7 +97,7 @@ describe("EnhancedMap tests", () => {
         .set("rick", "https://youtu.be/dQw4w9WgXcQ")
         .set("array", [1, 2, 3]);
 
-      map.remove((e) => Array.isArray(e.value));
+      map.remove((e) => Array.isArray(e.v));
 
       expect(map.hasAll("one", "rick")).to.be.true;
       expect(map.hasAny("greetings", "array")).to.be.false;
@@ -78,6 +119,20 @@ describe("EnhancedMap tests", () => {
     });
   });
 
+  describe("EnhancedMap.removeAll()", () => {
+    it("should properly remove all the entries of the map", () => {
+      let map = new EnhancedMap()
+        .set("greetings", ["hello", "hi", "goodbye"])
+        .set("one", 1)
+        .set("rick", "https://youtu.be/dQw4w9WgXcQ")
+        .set("array", [1, 2, 3]);
+
+      map.removeAll();
+
+      expect(map.hasAny("greetings", "one", "rick", "array")).to.be.false;
+    });
+  });
+
   describe("EnhancedMap.some()", () => {
     it("should check if one of the given EnhancedMap entries matches the filter", () => {
       let map = new EnhancedMap()
@@ -86,9 +141,9 @@ describe("EnhancedMap tests", () => {
         .set("rick", "https://youtu.be/dQw4w9WgXcQ")
         .set("array", [1, 2, 3]);
 
-      expect(map.some(({ key }) => key === "one")).to.be.true;
-      expect(map.some(({ value }) => value === "https://youtu.be/dQw4w9WgXcQ"))
-        .to.be.true;
+      expect(map.some(({ k }) => k === "one")).to.be.true;
+      expect(map.some(({ v }) => v === "https://youtu.be/dQw4w9WgXcQ")).to.be
+        .true;
     });
   });
 
@@ -96,25 +151,25 @@ describe("EnhancedMap tests", () => {
     it("should check if all of the EnhancedMap entries match the filter", () => {
       let map = new EnhancedMap().set("one", 1).set("two", 2).set("three", 3);
 
-      expect(map.every(({ value }) => Number.isInteger(value))).to.be.true;
+      expect(map.every(({ v }) => Number.isInteger(v))).to.be.true;
     });
   });
 
   describe("EnhancedMap.each()", () => {
     it("should execute a function for each entry in the map", () => {
-      let map = new EnhancedMap()
-        .set("greetings", ["hello", "hi", "goodbye"])
-        .set("one", 1)
-        .set("rick", "https://youtu.be/dQw4w9WgXcQ")
-        .set("array", [1, 2, 3]);
-
       let keys: string[] = [];
       let values: any[] = [];
 
-      map.each((e) => {
-        keys.push(e.key);
-        values.push(e.value);
-      });
+      new EnhancedMap()
+        .set("greetings", ["hello", "hi", "goodbye"])
+        .set("one", 1)
+        .set("rick", "https://youtu.be/dQw4w9WgXcQ")
+        .set("array", [1, 2, 3])
+
+        .each((e) => {
+          keys.push(e.k);
+          values.push(e.v);
+        });
 
       expect(keys).to.deep.equal(["greetings", "one", "rick", "array"]);
       expect(values).to.deep.equal([
@@ -133,9 +188,9 @@ describe("EnhancedMap tests", () => {
         .set("second", 2)
         .set("third", 3);
 
-      let newMap = map.map(({ key, value }) => ({
-        key,
-        value: value + 1,
+      let newMap = map.map(({ k, v }) => ({
+        k,
+        v: v + 1,
       }));
 
       expect(newMap).to.deep.equal(
@@ -154,9 +209,31 @@ describe("EnhancedMap tests", () => {
         .set("two", 2)
         .set("three", 3);
 
-      let sum = map.reduce(0, (v, { value }) => v + value);
+      let sum = map.reduce(0, (value, { v }) => v + value);
 
       expect(sum).to.equal(6);
+    });
+  });
+
+  describe("EnhancedMap.sort()", () => {
+    it("should sort the map properly", () => {
+      let map = new EnhancedMap<number>()
+        .set("two", 2)
+        .set("forty-five", 45)
+        .set("one", 1)
+        .set("six hundred and sixty six", 666)
+        .set("three", 3)
+
+        .sort(({ v: a }, { v: b }) => a - b);
+
+      expect(map).to.deep.equal(
+        new Map<string, number>()
+          .set("one", 1)
+          .set("two", 2)
+          .set("three", 3)
+          .set("forty-five", 45)
+          .set("six hundred and sixty six", 666)
+      );
     });
   });
 
@@ -168,13 +245,11 @@ describe("EnhancedMap tests", () => {
         .set("one point five", 1.5)
         .set("two", 2);
 
-      let found = map.findAll(({ value }) => Number.isInteger(value));
+      let found = map.findAll(({ v }) => Number.isInteger(v));
 
       expect(
         found?.every(
-          (e) =>
-            (e.key === "one" || e.key === "two") &&
-            (e.value === 1 || e.value === 2)
+          (e) => (e.k === "one" || e.k === "two") && (e.v === 1 || e.v === 2)
         )
       ).to.be.true;
     });
@@ -184,7 +259,7 @@ describe("EnhancedMap tests", () => {
         .set("two", 2)
         .set("three", 3);
 
-      let found = map.findAll((e) => !Number.isInteger(e.value));
+      let found = map.findAll((e) => !Number.isInteger(e.v));
 
       expect(found).to.be.null;
     });
@@ -197,11 +272,11 @@ describe("EnhancedMap tests", () => {
         .set("one", 1)
         .set("one point five", 1.5);
 
-      let found = map.find(({ value }) => Number.isInteger(value));
+      let found = map.find(({ v }) => Number.isInteger(v));
 
       expect(found).to.not.be.null;
-      expect(found?.key).to.equal("one");
-      expect(found?.value).to.equal(1);
+      expect(found?.k).to.equal("one");
+      expect(found?.v).to.equal(1);
     });
     it("should return null if no entry matches the specified filter", () => {
       let map = new EnhancedMap<number>()
@@ -209,7 +284,7 @@ describe("EnhancedMap tests", () => {
         .set("two", 2)
         .set("three", 3);
 
-      let found = map.find(({ value }) => !Number.isInteger(value));
+      let found = map.find(({ v }) => !Number.isInteger(v));
 
       expect(found).to.be.null;
     });
@@ -255,10 +330,19 @@ describe("EnhancedMap tests", () => {
       let object = map.toJSON();
 
       expect(object).to.deep.equal([
-        { key: "one", value: 1 },
-        { key: "two", value: 2 },
-        { key: "three", value: 3 },
+        { k: "one", v: 1 },
+        { k: "two", v: 2 },
+        { k: "three", v: 3 },
       ]);
+    });
+  });
+
+  describe("EnhancedMap.size", () => {
+    it("should be the size of the map (the number of entries)", () => {
+      let map = new EnhancedMap()
+        .set("rick", "https://youtu.be/dQw4w9WgXcQ")
+        .set("one", 1);
+      expect(map.size).to.equal(2);
     });
   });
 });
