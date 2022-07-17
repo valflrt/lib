@@ -1,0 +1,27 @@
+name: docs
+
+on:
+  push:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Node setup
+        uses: actions/setup-node@v1
+        with:
+          node-version: 17
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Clean install using `npm ci`
+        run: npm ci
+
+      - name: Generate Docs
+        run: npm run docs:gen
+
+      - name: Update Docs
+        run: git commit -a -m "Auto-update docs." && git push
