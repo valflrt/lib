@@ -1,6 +1,12 @@
 export interface EnhancedMapEntry<V = any> {
-  key: string;
-  value: V;
+  /**
+   * Key of the entry.
+   */
+  k: string;
+  /**
+   * Value of the entry.
+   */
+  v: V;
 }
 
 export interface EnhancedMapConstructor {
@@ -16,24 +22,41 @@ export interface EnhancedMap<V = any> extends Map<string, V> {
 }
 
 export class EnhancedMap<V = any> extends Map<string, V> {
+  public get size(): number {
+    return this.reduce(0, (acc) => acc + 1);
+  }
+
   /**
    * Creates an empty Map.
    */
   constructor();
   /**
    * Creates a Map from premade entries.
+   *
    * @param entries Entries to make the Map with.
    */
   constructor(entries: EnhancedMapEntry<V>[] | Map<string, V>);
   constructor(entries?: EnhancedMapEntry<V>[] | Map<string, V>) {
-    let mappedEntries: [string, V][] = [];
+    super();
     if (entries)
       if (Array.isArray(entries)) {
-        entries.forEach(({ key, value }) => mappedEntries.push([key, value]));
-      } else {
-        entries.forEach((value, key) => mappedEntries.push([key, value]));
+        entries.forEach(({ k, v }) => this.set(k, v));
+      } else if (entries instanceof Map) {
+        entries.forEach((v, k) => this.set(k, v));
       }
-    super(mappedEntries ?? undefined);
+  }
+
+  /**
+   * Adds a new entry with the specified key and value.
+   *
+   * @param key Key of the new entry.
+   * @param value Value of the new entry.
+   *
+   * @returns {this} The current Map.
+   */
+  public set(key: string, value: V): this {
+    super.set(key, value);
+    return this;
   }
 
   /**
@@ -45,6 +68,7 @@ export class EnhancedMap<V = any> extends Map<string, V> {
   /**
    * Returns the entry at the specified index. If it doesn't
    * exist returns undefined.
+   *
    * @param index Index of the entry.
    */
   public get(index: number): V | undefined;
@@ -52,13 +76,15 @@ export class EnhancedMap<V = any> extends Map<string, V> {
     return typeof keyOrIndex === "string"
       ? super.get(keyOrIndex)
       : typeof keyOrIndex === "number"
-      ? this.find((e, i) => i === keyOrIndex)?.value ?? undefined
+      ? this.find((e, i) => i === keyOrIndex)?.v ?? undefined
       : undefined;
   }
 
   /**
    * Checks if all specified entries exist.
+   *
    * @param keys Keys of the entries.
+   *
    * @returns {boolean} Whether all the entries exist or not.
    */
   public hasAll(...keys: string[]): boolean {
@@ -67,7 +93,9 @@ export class EnhancedMap<V = any> extends Map<string, V> {
 
   /**
    * Checks if one of the specified entries exists.
+   *
    * @param keys Keys of the entries.
+   *
    * @returns {boolean} Whether one or more of the entries
    * exists or not.
    */
@@ -77,28 +105,46 @@ export class EnhancedMap<V = any> extends Map<string, V> {
 
   /**
    * Removes all entries matching the filter.
+   *
    * @param filter Function executed for each entry, when true
    * is returned, the corresponding entry is removed.
+   *
+   * @returns {this} The current Map.
    */
   public remove(
     filter: (entry: EnhancedMapEntry<V>, index: number) => unknown
-  ) {
-    this.each((e, i) => (filter(e, i) ? this.delete(e.key) : null));
+  ): this {
+    this.each((e, i) => (filter(e, i) ? this.delete(e.k) : null));
+    return this;
   }
 
   /**
    * Removes the entries with the specified keys.
+   *
    * @param keys Keys of the entries to remove.
+   *
+   * @returns {this} The current Map.
    */
-  public removeKeys(...keys: string[]) {
-    this.remove((e) => keys.some((k) => k === e.key));
+  public removeKeys(...keys: string[]): this {
+    return this.remove((e) => keys.some((k) => k === e.k));
+  }
+
+  /**
+   * Removes all entries.
+   *
+   * @returns {this} The current Map.
+   */
+  public removeAll(): this {
+    return this.remove(() => true);
   }
 
   /**
    * Determine if an entry matches the specified filter.
+   *
    * @param filter Function called one time for each element
    * in the Map, if true is returned, the entry is
    * considered as matching the filter.
+   *
    * @returns {boolean} Whether an entry matched the filter
    * or not.
    */
@@ -112,8 +158,10 @@ export class EnhancedMap<V = any> extends Map<string, V> {
 
   /**
    * Determine if all the entries match the specified filter.
+   *
    * @param filter Function called one time for each element
    * in the Map.
+   *
    * @returns {boolean} Whether all entries matched the filter
    * or not.
    */
@@ -126,34 +174,42 @@ export class EnhancedMap<V = any> extends Map<string, V> {
   }
 
   /**
-   * @deprecated Use {@link EnhancedMap.each} instead
+   * Executes a function for each entry of the Map.
+   *
+   * @param callback Function executed for each entry of the
+   * Map.
+   *
+   * @returns {this} The current Map.
+   */
+  public each(
+    callback: (entry: EnhancedMapEntry<V>, index: number) => unknown
+  ): this {
+    let i = 0;
+    super.forEach((v, k) => {
+      callback({ k, v }, i);
+      i += 1;
+    });
+    return this;
+  }
+
+  /**
+   * Executes a function for each entry of the Map.
+   *
+   * @deprecated
    */
   public forEach(
-    callbackfn: (value: V, key: string, map: Map<string, V>) => void,
+    callbackfn: (value: any, key: any, map: Map<any, any>) => any,
     thisArg?: any
   ): void {
     super.forEach(callbackfn, thisArg);
   }
 
   /**
-   * Executes a function for each entry of the Map.
-   * @param callback Function executed for each entry of the
-   * Map.
-   */
-  public each(
-    callback: (entry: EnhancedMapEntry<V>, index: number) => unknown
-  ): void {
-    let i = 0;
-    super.forEach((v, k) => {
-      callback({ key: k, value: v }, i);
-      i += 1;
-    });
-  }
-
-  /**
    * Maps Map: executes a function for each entry and creates
    * a new Map from what it returns (similar to {@link Array.map}).
+   *
    * @param mapper Function called for each entry.
+   *
    * @returns {EnhancedMap} The new Map.
    */
   public map<V2>(
@@ -161,8 +217,8 @@ export class EnhancedMap<V = any> extends Map<string, V> {
   ): EnhancedMap<V2> {
     let newMap = new EnhancedMap<V2>();
     this.each((e, i) => {
-      let { key, value } = mapper(e, i);
-      newMap.set(key, value);
+      let { k, v } = mapper(e, i);
+      newMap.set(k, v);
     });
     return newMap;
   }
@@ -171,8 +227,10 @@ export class EnhancedMap<V = any> extends Map<string, V> {
    * Executes the specified callback function for each entry
    * in the map. An initial value is provided and updated with
    * the value returned for each execution of the callback.
+   *
    * @param initialValue The initial value.
    * @param callback The function executed for each entry.
+   *
    * @returns The new value.
    */
   public reduce<V2>(
@@ -184,15 +242,35 @@ export class EnhancedMap<V = any> extends Map<string, V> {
       map: EnhancedMap<V>
     ) => V2
   ): V2 {
-    let v = initialValue;
-    this.each((e, i) => (v = callback(v, e, i, this)));
-    return v;
+    let value = initialValue;
+    this.each((e, i) => (value = callback(value, e, i, this)));
+    return value;
+  }
+
+  /**
+   * Sorts the map.
+   *
+   * @param compare Function used to sort the entries. It is
+   * expected to return "less" if the first argument is less
+   * than the second argument, "equal" if they're equal, and
+   * "more" otherwise. If omitted, the entries are sorted in
+   * ascending ASCII character order.
+   *
+   * @returns The new value.
+   */
+  public sort(
+    compare: (a: EnhancedMapEntry<V>, b: EnhancedMapEntry<V>) => number
+  ): this {
+    new EnhancedMap(this.toJSON().sort(compare));
+    return this;
   }
 
   /**
    * Finds all entries matching the specified filter.
+   *
    * @param finder Function called for every entries, when
    * returning true, the entry is added to the output array.
+   *
    * @returns {EnhancedMapEntry<V>[] | null} Array of found
    * entries or null if no entry matched the filter.
    */
@@ -207,8 +285,10 @@ export class EnhancedMap<V = any> extends Map<string, V> {
   /**
    * Finds an entry matching the specified filter.
    * (similar to {@link Array.find})
+   *
    * @param finder Function called for every entries until it
    * returns true.
+   *
    * @returns {EnhancedMapEntry<V> | null} The found
    * entry or null if no entry matched the filter.
    */
@@ -220,6 +300,7 @@ export class EnhancedMap<V = any> extends Map<string, V> {
 
   /**
    * Creates an exact copy of the current Map.
+   *
    * @returns {EnhancedMap<V>}
    */
   public clone(): EnhancedMap<V> {
@@ -229,7 +310,9 @@ export class EnhancedMap<V = any> extends Map<string, V> {
   /**
    * Concats the current Map with one or more other
    * Map
+   *
    * @param others Other Map to concat with
+   *
    * @returns {EnhancedMap<V | V2>} The new Map
    */
   public concat<V2>(...others: EnhancedMap<V2>[]): EnhancedMap<V | V2> {
