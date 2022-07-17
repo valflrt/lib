@@ -29,4 +29,6 @@ jobs:
         run: npm run docs:gen
 
       - name: Update docs
-        run: git commit -a -m "Auto-update docs." && git push
+        run: |
+          git add docs/*
+          git commit -a -m "Auto-update docs." && git push
