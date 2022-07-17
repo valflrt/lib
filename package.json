@@ -8,7 +8,7 @@
   "scripts": {
     "build": "rm -rf dist && npx tsc",
     "test": "npx ts-mocha -p tsconfig.json test/**/*.test.ts",
-    "docs:gen": "rm -rf docs && npx typedoc src --readme README.docs.md"
+    "docs:gen": "rm -rf docs && npx typedoc src"
   },
   "author": "valflrt",
   "license": "MIT",
