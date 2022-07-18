@@ -1,6 +1,6 @@
 {
   "name": "@valflrt/lib",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Some useful things.",
   "type": "module",
   "main": "dist/index.js",
